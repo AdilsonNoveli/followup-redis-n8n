@@ -14,7 +14,8 @@ services:
         limits:
           cpus: "0.5"
           memory: 256M
-
+    networks:
+      - network_swarm
     environment:
       # URL do Redis para conexão. Ex.: redis://host:porta
       - REDIS_URL=redis://redis_followup:6379
@@ -34,8 +35,6 @@ services:
       - FAILURE_MESSAGE=failure
       # Porta onde a aplicação (Express) roda internamente
       - PORT=3000
-      # Ativa/desativa logs em nível debug (true = ativado, false = desativado)
-      - DEBUG=false
       # Define o canal que o subscriber escuta para receber callbacks (padrão "workflow_callback")
       - CALLBACK_CHANNEL=workflow_success
       # Número de tentativas (attempts) para cada job
@@ -52,12 +51,8 @@ services:
       - BULLMQ_REMOVE_ON_FAIL=true
       # Concurrency (quantos jobs podem ser processados em paralelo)
       - BULLMQ_CONCURRENCY=10
-      # Define o log false ou true.
-      - LOG_LEVEL=false
-
-    networks:
-      - network_swarm
-
+      # Ativa/desativa logs em nível debug (true = ativado, false = desativado)
+      - DEBUG=false
 networks:
   network_swarm:
     external: true
