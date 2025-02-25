@@ -2,10 +2,6 @@
 
 **FollowUP Com Fila no Redis**, utiliza o **Redis** como principal mecanismo de mensageria e agendamento de eventos, combinando **Redis Streams** e **Redis TTL** (Time to Live) para disparar jobs de forma eficiente. Em vez de usar um polling periódico (por exemplo, um cron job que verifica a cada minuto), a aplicação aproveita o **evento de expiração** nativo do Redis para acionar fluxos no momento exato em que uma chave expira. 
 
-Colabore com qualquer valor, Ajude a manter!
-![Imagem do WhatsApp de 2025-02-24 à(s) 22 49 06_1ed545eb](https://github.com/user-attachments/assets/a146d800-8c48-414f-a0c1-aa43188a1aa9)
-
-
 ## Visão Geral
 
 1. **Redis TTL + Eventos de Expiração:**  
@@ -105,6 +101,10 @@ flowchart LR
 ## Licença
 
 [MIT](LICENSE) — Sinta-se à vontade para usar, modificar e distribuir este projeto.
+
+Colabore com qualquer valor, Ajude a manter!
+![pix](https://github.com/user-attachments/assets/3bdd2c79-d683-4ee7-9bea-03169d17ef3e)
+
 
 ---
 
