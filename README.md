@@ -103,15 +103,11 @@ flowchart LR
 [MIT](LICENSE) — Sinta-se à vontade para usar, modificar e distribuir este projeto.
 
 Se você deseja apoiar nosso projeto financeiramente, disponibilizamos um QR Code para doações via Pix. Sua contribuição é fundamental para mantermos e impulsionarmos o desenvolvimento desta ferramenta de código aberto.
-
-QR Code para doações Pix
-![pix01](https://github.com/user-attachments/assets/70614db8-8ba1-46b0-9b22-66271e9abdb0)
-
-
 Além disso, também valorizamos contribuições em forma de código ou ideias criativas. Se você tem interesse em colaborar dessa maneira, confira nossas diretrizes de contribuição para saber mais detalhes e como dar os primeiros passos.
+Seja qual for a forma de apoio, ele é essencial para o crescimento do projeto e faz toda a diferença. *Agradecemos imensamente!* Juntos, podemos ir ainda mais longe.
 
-Seja qual for a forma de apoio, ele é essencial para o crescimento do projeto e faz toda a diferença. Agradecemos imensamente! Juntos, podemos ir ainda mais longe.
-
+###QR Code para doações Pix
+![pix01](https://github.com/user-attachments/assets/70614db8-8ba1-46b0-9b22-66271e9abdb0)
 
 ---
 
