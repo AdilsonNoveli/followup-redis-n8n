@@ -6,9 +6,9 @@
 
 1. **Redis TTL + Eventos de Expiração:**  
    - Cada chave no Redis tem um tempo de vida (TTL). Quando a chave expira, o Redis emite um evento no canal `__keyevent@0__:expired`.  
-   - A aplicação (FollowUP) escuta esse canal e, ao detectar uma expiração, enfileira um job no **BullMQ** (ou outra biblioteca de filas, como Asynq) para processar a ação necessária.
+   - A aplicação (FollowUP) escuta esse canal e, ao detectar uma expiração, enfileira um job no **BullMQ** para processar a ação necessária.
 
-2. **Enfileiramento e Processamento de Jobs (BullMQ ou Asynq):**  
+2. **Enfileiramento e Processamento de Jobs BullMQ:**  
    - Quando um evento de expiração ocorre, o projeto cria um job na fila.  
    - Um **Worker** processa o job, podendo disparar webhooks ou publicar mensagens em canais Redis, aguardando callbacks para confirmar a conclusão.  
    - Isso garante alta escalabilidade, pois o número de tentativas e a lógica de reprocessamento (backoff) são configurados na fila, não em scripts de cron.
