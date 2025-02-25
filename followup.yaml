@@ -9,7 +9,8 @@ services:
         condition: on-failure
       placement:
         constraints:
-          - node.hostname == worker02
+          - node.role == manager
+          #- node.hostname == worker
       resources:
         limits:
           cpus: "0.5"
@@ -25,7 +26,7 @@ services:
       #   Se não houver webhookUrl, deixe antes do "|" vazio.
       #   Se não houver canal, deixe depois do "|" vazio.
       # Ex.: key01 dispara webhook e canal, key02 apenas canal
-      - KEY_WEBHOOK_MAPPING=key01=https://webhook.domino.com/webhook/followup01|redisChannel1,key02=|redisChannel2
+      - KEY_WEBHOOK_MAPPING=key01=https://webhook.dominio.com.br/webhook/followup01|redisChannel1,key02=|redisChannel2
 
       # Nome da fila utilizada pelo BullMQ para gerenciar os jobs
       - BULLMQ_QUEUE_NAME=webhookQueue
