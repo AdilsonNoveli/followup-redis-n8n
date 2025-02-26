@@ -1,118 +1,174 @@
+Below is an improved and fully translated version of your README.md. This version provides a clear, real-world explanation of how the application works and how to integrate it with n8n. The content has been adjusted for clarity and to reflect best practices for an event-driven architecture using Redis TTL and BullMQ.
+
+---
 
 ![followUp-banner](https://github.com/user-attachments/assets/fe5946d3-4fb1-40ef-9bae-81659a4846dd)
 
-# N8N FollowUP Com Fila no Redis
-Entre no Grupo WhatsApp para Tirar Dúvidas: https://chat.whatsapp.com/KUL70pP77yiG8T0qPfPE1l 
+# n8n FollowUP with Redis Queue
 
-**FollowUP Com Fila no Redis**, utiliza o **Redis** como principal mecanismo de mensageria e agendamento de eventos, combinando **Redis Streams** e **Redis TTL** (Time to Live) para disparar jobs de forma eficiente. Em vez de usar um polling periódico (por exemplo, um cron job que verifica a cada minuto), a aplicação aproveita o **evento de expiração** nativo do Redis para acionar fluxos no momento exato em que uma chave expira. 
+Join our WhatsApp Group for Support: [https://chat.whatsapp.com/KUL70pP77yiG8T0qPfPE1l](https://chat.whatsapp.com/KUL70pP77yiG8T0qPfPE1l)
 
-## Visão Geral
+**n8n FollowUP with Redis Queue** leverages **Redis** as the main messaging and event-scheduling mechanism. By combining **Redis Streams** and **Redis TTL (Time to Live)**, the application efficiently triggers jobs exactly when a key expires—without relying on periodic polling. This solution harnesses Redis’s native key expiration events to drive real-time workflows in n8n.
 
-1. **Redis TTL + Eventos de Expiração:**  
-   - Cada chave no Redis tem um tempo de vida (TTL). Quando a chave expira, o Redis emite um evento no canal `__keyevent@0__:expired`.  
-   - A aplicação (FollowUP) escuta esse canal e, ao detectar uma expiração, enfileira um job no **BullMQ** para processar a ação necessária.
+---
 
-2. **Enfileiramento e Processamento de Jobs BullMQ:**  
-   - Quando um evento de expiração ocorre, o projeto cria um job na fila.  
-   - Um **Worker** processa o job, podendo disparar webhooks ou publicar mensagens em canais Redis, aguardando callbacks para confirmar a conclusão.  
-   - Isso garante alta escalabilidade, pois o número de tentativas e a lógica de reprocessamento (backoff) são configurados na fila, não em scripts de cron.
+## Overview
 
-3. **Callback via Redis Pub/Sub (workflow_callback):**  
-   - Em vez de depender de um endpoint HTTP, a aplicação pode receber confirmações via Redis Pub/Sub (publicando `{"jobId":..., "status":"success"}` no canal).  
-   - Isso evita polling e garante um fluxo totalmente orientado a eventos.
+1. **Redis TTL + Expiration Events**  
+   - Each key in Redis is assigned a TTL. When a key expires, Redis emits an event on the `__keyevent@0__:expired` channel.
+   - The FollowUP application listens to this channel and, upon detecting an expiration, enqueues a job in **BullMQ** to process the required action.
 
-4. **Mapeamento de Ações:**  
-   - Cada chave pode ter um **webhookUrl** e/ou um **canal** Redis.  
-   - Se for `key01`, a aplicação dispara um webhook. Se for `key02`, publica em um canal.  
-   - Esse mapeamento é definido em variáveis de ambiente (por exemplo, `KEY_WEBHOOK_MAPPING=key01=https://...,key02=|redisChannel`).
+2. **Job Enqueueing and Processing with BullMQ**  
+   - Once an expiration event occurs, a job is created in the queue.
+   - A **Worker** processes the job by triggering a webhook and/or publishing a message to a Redis channel.
+   - The Worker then waits for a callback (via Redis Pub/Sub) to confirm successful job completion.
+   - This approach ensures high scalability since retry logic (with backoff) is managed within the queue rather than using external cron jobs.
 
-## Funcionalidades Principais
+3. **Callback via Redis Pub/Sub (workflow_success)**  
+   - Instead of relying solely on an HTTP endpoint, the application accepts confirmation callbacks via Redis Pub/Sub. For example, publishing a payload like:
+     ```json
+     { "jobId": "47", "status": "success", "timestamp": 1680000000000 }
+     ```
+     on the callback channel finalizes the job.
+   - This event-driven approach eliminates polling and enables real-time processing.
 
-- **Disparo de Webhooks**: Ao expirar a chave, o Worker envia uma requisição HTTP (POST) para a URL configurada, podendo retornar `success` ou não.  
-- **Publicação em Canais**: Se configurado, a aplicação também (ou em vez disso) publica uma mensagem no canal Redis desejado.  
-- **Callback Orientado a Eventos**: A aplicação aguarda um callback via Redis Pub/Sub para finalizar o job, evitando qualquer tipo de polling.  
-- **Reprocessamento com Backoff**: Se o disparo falha, o sistema pode reprocessar (tentativas + backoff), sem precisar de scripts adicionais.
+4. **Action Mapping**  
+   - Each key can be associated with a **webhookUrl** and/or a **Redis channel**.
+   - For instance, if the key is `key01`, the application triggers a webhook; if it is `key02`, it publishes a message to a channel.
+   - The mapping is defined using environment variables (e.g., `KEY_WEBHOOK_MAPPING=key01=https://...,key02=|redisChannel`).
 
-## Por que Usar TTL do Redis em Vez de Schedule Trigger (Polling)?
+---
 
-1. **Acionamento Exato (Event-Driven)**  
-   - Com o **TTL** do Redis, a aplicação é notificada **imediatamente** quando a chave expira, sem precisar verificar a cada X segundos/minutos.  
-   - Isso permite reações em tempo quase real.
+## Key Features
 
-2. **Menos Sobrecarga e Latência**  
-   - No **polling**, você rodaria um cron job (por exemplo, a cada minuto) para checar se algo expirou. Isso pode gerar latência (até 1 minuto de atraso) e overhead constante.  
-   - Com o **TTL + evento de expiração**, não há overhead de checagens periódicas e nenhuma latência extra além do evento real de expiração.
+- **Webhook Triggering:**  
+  When a key expires, the Worker sends an HTTP POST to the configured URL. The response must return a confirmation (typically `success`).
 
-3. **Simplicidade de Código**  
-   - Com polling, você teria scripts cron ou agendamentos. Precisaria gerenciar intervalos, cuidar de locks para evitar duplicidade, etc.  
-   - Com TTL, basta definir `EXPIRE key X`, e o Redis faz o resto, emitindo o evento exato.
+- **Channel Publishing:**  
+  If configured, the application publishes a message to the specified Redis channel instead of or in addition to sending a webhook.
 
-4. **Escalabilidade**  
-   - Se você tiver muitas chaves expirando, o Redis lida internamente com elas, disparando eventos. A aplicação só reage quando necessário.  
-   - No polling, se você tem milhares de chaves, precisa varrer todas a cada intervalo, consumindo recursos.
+- **Event-Driven Callback:**  
+  The application waits for a callback via Redis Pub/Sub (on a dedicated callback channel) to finalize the job. This avoids any need for periodic polling.
 
-Em resumo, **TTL do Redis** permite uma arquitetura **event-driven**, **precisa** e **eficiente**, sem a complexidade de manter scripts de agendamento ou overhead de varreduras periódicas.
+- **Backoff and Retry:**  
+  If a job fails (e.g., due to webhook failure), the system automatically retries the job using a configurable backoff strategy.
 
-## Arquitetura Simplificada
+---
+
+## Why Use Redis TTL Instead of Polling?
+
+1. **Immediate, Event-Driven Execution**  
+   - Redis notifies you immediately when a key expires, eliminating the need for frequent polling and reducing reaction time.
+
+2. **Lower Overhead and Latency**  
+   - Polling typically involves running a cron job every minute, which can introduce delays and unnecessary resource consumption.
+   - With Redis TTL and expiration events, there’s no periodic overhead—only immediate, real-time event handling.
+
+3. **Simpler Code Base**  
+   - Polling requires extra scripts and logic to manage intervals and prevent duplicate processing.
+   - With Redis TTL, you simply set the key with `EXPIRE key X` and let Redis handle the expiration event.
+
+4. **High Scalability**  
+   - Redis efficiently handles many keys expiring simultaneously and only triggers the necessary events.
+   - Polling thousands of keys at intervals would consume far more resources.
+
+In summary, Redis TTL enables an **event-driven**, **precise**, and **efficient** architecture without the complexity or overhead of scheduled polling.
+
+---
+
+## Simplified Architecture
 
 ```mermaid
 flowchart LR
-    A[TTL Subscriber] -->|Expiração de Chave| B[Enfileira Job no Worker]
-    B -->|Processa| C[Dispara Webhook / Publica em Canal]
-    C -->|Aguarda Callback| D[Redis Callback Subscriber]
+    A[TTL Subscriber] -->|Key Expiration| B[Enqueue Job in Worker]
+    B -->|Process Job| C[Trigger Webhook / Publish to Channel]
+    C -->|Wait for Callback| D[Redis Callback Subscriber]
     D -->|jobId + status| B
-    B --> E[Conclui Job]
+    B --> E[Finalize Job]
 ```
 
-## Configurações Importantes
+---
 
-- **REDIS_URL**: URL de conexão ao Redis.  
-- **KEY_WEBHOOK_MAPPING**: Mapeia cada chave ao seu webhook e/ou canal.  
-- **BULLMQ_QUEUE_NAME**: Nome da fila usada para gerenciar jobs.  
-- **SUCCESS_CHANNEL**: Canal onde o Worker publica o evento final de sucesso.  
-- **WORKER_CALLBACK_TIMEOUT**: Tempo de espera do Worker para receber o callback via Redis.  
-- **DEBUG**: Ativa logs detalhados.
+## Important Configuration
 
-## Como Rodar
+- **REDIS_URL:** Connection URL for Redis.
+- **KEY_WEBHOOK_MAPPING:** Maps each key to its webhook URL and/or channel.
+- **BULLMQ_QUEUE_NAME:** Name of the queue used for job management.
+- **SUCCESS_CHANNEL / CALLBACK_CHANNEL:** Channel where the Worker publishes the final success event.
+- **WORKER_CALLBACK_TIMEOUT:** Maximum time the Worker waits for a callback.
+- **DEBUG:** Enable detailed logging for troubleshooting.
 
-1. **Clone o Repositório**  
+---
+
+## How to Run
+
+1. **Clone the Repository**  
    ```bash
-   git clone https://github.com/usuario/followup-com-fila-redis.git
-   cd followup-com-fila-redis
+   git clone https://github.com/your-username/followup-with-redis-queue.git
+   cd followup-with-redis-queue
    ```
-2. **Defina as Variáveis no `.yaml`** (ou `.env`)  
+
+2. **Set Environment Variables**  
+   Create a `.env` or update your YAML configuration with:
    ```yaml
    REDIS_URL=redis://redis:6379
-   KEY_WEBHOOK_MAPPING=key01=https://...,key02=|myChannel
+   KEY_WEBHOOK_MAPPING=key01=https://your-webhook-url.com/followup01,key02=|yourChannel
    BULLMQ_QUEUE_NAME=webhookQueue
-   # ...
+   CALLBACK_CHANNEL=workflow_success
+   # Additional configurations as needed...
    ```
-3. **Subir via Docker Swarm**  
+
+3. **Deploy with Docker Swarm**  
    ```bash
    docker stack deploy -c stack.yml followup
    ```
-4. **Testar**  
-   - Defina uma chave no Redis com `TTL` (por ex. `SET key01 "valor" EX 60`).  
-   - Após 60s, o Redis emite o evento de expiração, o Worker enfileira o job, dispara o webhook ou canal, e aguarda callback.
 
-## Futuro e Extensões
+4. **Testing the Workflow**  
+   - Set a key in Redis with a TTL, for example:  
+     ```bash
+     SET key01 "value" EX 60
+     ```
+   - After 60 seconds, Redis emits the expiration event. The TTL Subscriber enqueues the job, the Worker triggers the webhook or publishes a message, and the system waits for the callback.
+   - In n8n, configure your workflow to listen for the callback. Make sure the final payload published on the callback channel includes:
+     ```json
+     {
+       "jobId": "47",
+       "status": "success",
+       "timestamp":  {{ Date.now() }}
+     }
+     ```
 
-- **Dashboard**: Integração com [Bull Board](https://github.com/felixmosh/bull-board) ou criação de um painel React.  
-- **API de Configuração**: Adicionar endpoints para gerenciar chaves e mapeamentos.  
-- **Múltiplas Filas**: Separar filas para diferentes prioridades.  
-- **Observabilidade**: Integração com Prometheus/Grafana para métricas de jobs e Redis.
+---
 
-## Licença
+## Future Enhancements
 
-[MIT](LICENSE) — Sinta-se à vontade para usar, modificar e distribuir este projeto.
+- **Dashboard:**  
+  Integrate with [Bull Board](https://github.com/felixmosh/bull-board) or build a custom React dashboard to monitor job status.
 
-Se você deseja apoiar nosso projeto financeiramente, disponibilizamos um QR Code para doações via Pix. Sua contribuição é fundamental para mantermos e impulsionarmos o desenvolvimento desta ferramenta de código aberto.
-Além disso, também valorizamos contribuições em forma de código ou ideias criativas. Se você tem interesse em colaborar dessa maneira, confira nossas diretrizes de contribuição para saber mais detalhes e como dar os primeiros passos.
-Seja qual for a forma de apoio, ele é essencial para o crescimento do projeto e faz toda a diferença. *Agradecemos imensamente!* Juntos, podemos ir ainda mais longe.
+- **Configuration API:**  
+  Add REST endpoints to dynamically manage keys and mappings.
 
-###QR Code para doações Pix
+- **Multiple Queues:**  
+  Separate queues for different job priorities and processing strategies.
+
+- **Observability:**  
+  Integrate with Prometheus/Grafana for monitoring job metrics and Redis performance.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE). Feel free to use, modify, and distribute the code.
+
+If you find this project helpful and want to support its development, consider donating via Pix (QR Code below) or contributing code and ideas. Every contribution helps improve and expand this open-source tool.
+
+### Pix Donation QR Code
 ![pix01](https://github.com/user-attachments/assets/70614db8-8ba1-46b0-9b22-66271e9abdb0)
 
 ---
 
-**FollowUP Com Fila no Redis** — transformando expirações de chaves em eventos real-time, sem polling.
+**n8n FollowUP with Redis Queue** – Transforming key expirations into real-time events without polling.
+
+---
+
+This revised README provides clear context, real examples, and step-by-step instructions for integrating the application with n8n.
