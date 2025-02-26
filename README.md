@@ -150,6 +150,15 @@ flowchart LR
 
 - **Observability:**  
   Integrate with Prometheus/Grafana for monitoring job metrics and Redis performance.
+---
+- **LISTEN CHANNEL**
+  
+![listen-channel](https://github.com/user-attachments/assets/09fe449a-ed4c-4544-a9ab-9ef6ef32dea1)
+
+---
+- **RECEIVE WEBHOOK**
+
+![receive-webhook](https://github.com/user-attachments/assets/edf52366-4ba2-4610-af7d-be26cada7b46)
 
 ---
 
