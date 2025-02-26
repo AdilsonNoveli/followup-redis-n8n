@@ -104,8 +104,8 @@ flowchart LR
 
 1. **Clone the Repository**  
    ```bash
-   git clone https://github.com/your-username/followup-with-redis-queue.git
-   cd followup-with-redis-queue
+   git clone https://github.com/AdilsonNoveli/followup-redis-n8n.git
+   cd followup-redis-n8n
    ```
 
 2. **Set Environment Variables**  
