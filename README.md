@@ -1,4 +1,4 @@
-![followUp-banner](https://github.com/user-attachments/assets/fe5946d3-4fb1-40ef-9bae-81659a4846dd)
+![FollowUP](https://github.com/user-attachments/assets/e8bf31ea-66f5-4f51-b45a-320232181d1f)
 
 # n8n FollowUP with Redis Queue
 
