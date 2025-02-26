@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  intromq:
+    image: b2intro/followup:1.0.0
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+          - node.hostname == worker
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+    environment:
+      - REDIS_URL=redis://redis_followup:6379
+      - KEY_WEBHOOK_MAPPING=key01=https://event.b2intro.com/webhook/followup01|redisChannel1,key02=|redisChannel2
+      - BULLMQ_QUEUE_NAME=webhookQueue
+      - CALLBACK_CHANNEL=workflow_success
+      - FAILURE_MESSAGE=failure
+      - PORT=3000
+      - BULLMQ_ATTEMPTS=5
+      - BULLMQ_BACKOFF_TYPE=fixed
+      - BULLMQ_BACKOFF_DELAY=5000
+      - WORKER_CALLBACK_TIMEOUT=300000
+      - BULLMQ_REMOVE_ON_COMPLETE=true
+      - BULLMQ_REMOVE_ON_FAIL=true
+      - BULLMQ_CONCURRENCY=10
+      - DEBUG=false
+
+    networks:
+      - network_swarm
+
+networks:
+  network_swarm:
+    external: true
+    name: network_swarm

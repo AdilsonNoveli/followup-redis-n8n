@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+  intromq:
+    image: b2intro/followup:1.0.0
+    deploy:
+     # Número de réplicas do serviço
+      replicas: 1                                
+      restart_policy:
+      # Reinicia o container somente em caso de falha
+        condition: on-failure                    
+      placement:
+        constraints:
+          #- node.role == manager
+          - node.hostname == worker02           
+      resources:
+        limits:
+        # Limite de CPU para o container
+          cpus: "0.5" 
+        # Limite de CPU para o container
+          memory: 256M                           
+
+    environment:
+      # URL para conexão com o Redis (exemplo: redis://host:porta)
+      - REDIS_URL=redis://redis_followup:6379
+
+      # Mapeamento de chaves para ações:
+      # Formato: "chave=webhookUrl|canal"
+      # Se não houver webhookUrl, deixe antes do "|" vazio.
+      # Se não houver canal, deixe depois do "|" vazio.
+      # Exemplo: key01 dispara webhook e canal, key02 apenas canal.
+      - KEY_WEBHOOK_MAPPING=key01=key01=https://your-webhook-url.com/followup01,key02=|yourChannel
+
+      # Nome da fila utilizada pelo BullMQ para gerenciar os jobs
+      - BULLMQ_QUEUE_NAME=webhookQueue
+      # Canal onde o evento final de sucesso será publicado
+      - SUCCESS_CHANNEL=success
+      # Nome ou valor utilizado como mensagem de falha (pode ser personalizado)
+      - FAILURE_MESSAGE=failure
+      # Porta interna onde a aplicação (Express) será executada
+      - PORT=3000
+      # Define o canal que o subscriber utiliza para escutar callbacks
+      - CALLBACK_CHANNEL=workflow_success
+      # Número de tentativas (attempts) para cada job no BullMQ
+      - BULLMQ_ATTEMPTS=5
+      # Define o tipo de backoff para as tentativas de retry (ex.: fixed ou exponential)
+      - BULLMQ_BACKOFF_TYPE=fixed
+      # Tempo de espera (em ms) entre as tentativas de retry do job
+      - BULLMQ_BACKOFF_DELAY=5000
+      # Tempo máximo de espera (em ms) para receber o callback via Redis (exemplo: 300000 ms = 5 minutos)
+      - WORKER_CALLBACK_TIMEOUT=300000
+      # Se true, jobs concluídos com sucesso serão automaticamente removidos do banco de dados
+      - BULLMQ_REMOVE_ON_COMPLETE=true
+      # Se true, jobs que falharem definitivamente (após esgotar as tentativas) serão removidos do banco de dados
+      - BULLMQ_REMOVE_ON_FAIL=true
+      # Define quantos jobs podem ser processados em paralelo (concorrência)
+      - BULLMQ_CONCURRENCY=10
+      # Ativa ou desativa os logs de depuração (true ativa log do bullMQ - Não útil)
+      - DEBUG=false
+
+
+    networks:
+      - network_swarm
+
+networks:
+  network_swarm:
+    external: true
+    name: network_swarm
