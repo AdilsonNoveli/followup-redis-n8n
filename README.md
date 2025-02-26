@@ -2,6 +2,7 @@
 ![followUp-banner](https://github.com/user-attachments/assets/fe5946d3-4fb1-40ef-9bae-81659a4846dd)
 
 # N8N FollowUP Com Fila no Redis
+Entre no Grupo WhatsApp para Tirar Dúvidas: https://chat.whatsapp.com/KUL70pP77yiG8T0qPfPE1l 
 
 **FollowUP Com Fila no Redis**, utiliza o **Redis** como principal mecanismo de mensageria e agendamento de eventos, combinando **Redis Streams** e **Redis TTL** (Time to Live) para disparar jobs de forma eficiente. Em vez de usar um polling periódico (por exemplo, um cron job que verifica a cada minuto), a aplicação aproveita o **evento de expiração** nativo do Redis para acionar fluxos no momento exato em que uma chave expira. 
 
