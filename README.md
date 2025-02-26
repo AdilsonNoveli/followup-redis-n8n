@@ -1,7 +1,3 @@
-Below is an improved and fully translated version of your README.md. This version provides a clear, real-world explanation of how the application works and how to integrate it with n8n. The content has been adjusted for clarity and to reflect best practices for an event-driven architecture using Redis TTL and BullMQ.
-
----
-
 ![followUp-banner](https://github.com/user-attachments/assets/fe5946d3-4fb1-40ef-9bae-81659a4846dd)
 
 # n8n FollowUP with Redis Queue
