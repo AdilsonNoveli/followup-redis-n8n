@@ -1,4 +1,5 @@
-![FollowUP](https://github.com/user-attachments/assets/e8bf31ea-66f5-4f51-b45a-320232181d1f)
+
+![FollowUP](https://github.com/user-attachments/assets/6754bda8-a742-499a-a380-e45eea912f92)
 
 # n8n FollowUP with Redis Queue
 
@@ -160,7 +161,9 @@ If you find this project helpful and want to support its development, consider d
 
 ### Pix Donation QR Code
 ![pix01](https://github.com/user-attachments/assets/70614db8-8ba1-46b0-9b22-66271e9abdb0)
+"Love my project? Support it with a PIX donation! Every contribution helps me keep improving. Thank you! 🚀💜 #OpenSource #SupportCreators"
 
+Feel free to adjust it to fit your style! 😊
 ---
 
 **n8n FollowUP with Redis Queue** – Transforming key expirations into real-time events without polling.
