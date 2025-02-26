@@ -11,8 +11,8 @@ services:
         condition: on-failure                    
       placement:
         constraints:
-          #- node.role == manager
-          - node.hostname == worker02           
+          - node.role == manager
+          #- node.hostname == worker           
       resources:
         limits:
         # Limite de CPU para o container
