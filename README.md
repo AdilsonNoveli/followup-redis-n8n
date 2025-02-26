@@ -170,8 +170,8 @@ If you find this project helpful and want to support its development, consider d
 
 ### Pix Donation QR Code
 ![pix01](https://github.com/user-attachments/assets/70614db8-8ba1-46b0-9b22-66271e9abdb0)
-"Love my project? Support it with a PIX donation! Every contribution helps me keep improving. Thank you! 🚀💜 #OpenSource #SupportCreators"
 
+"Love my project? Support it with a PIX donation! Every contribution helps me keep improving. Thank you! 🚀💜 #OpenSource #SupportCreators"
 Feel free to adjust it to fit your style! 😊
 ---
 
