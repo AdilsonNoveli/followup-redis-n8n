@@ -1,7 +1,7 @@
 
 ![FollowUP](https://github.com/user-attachments/assets/6754bda8-a742-499a-a380-e45eea912f92)
 
-# n8n FollowUP with Redis Queue
+# FollowUP with Redis Queue
 
 Join our WhatsApp Group for Support: [https://chat.whatsapp.com/KUL70pP77yiG8T0qPfPE1l](https://chat.whatsapp.com/KUL70pP77yiG8T0qPfPE1l)
 
