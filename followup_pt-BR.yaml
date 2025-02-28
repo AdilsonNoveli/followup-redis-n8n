@@ -29,7 +29,7 @@ services:
       # Se não houver webhookUrl, deixe antes do "|" vazio.
       # Se não houver canal, deixe depois do "|" vazio.
       # Exemplo: key01 dispara webhook e canal, key02 apenas canal.
-      - KEY_WEBHOOK_MAPPING=key01=key01=https://your-webhook-url.com/followup01,key02=|yourChannel
+      - KEY_WEBHOOK_MAPPING=key01=https://your-webhook-url.com/followup01|yourChannel-01,key02=|yourChannel-2,key03=|yourChannel-3
 
       # Nome da fila utilizada pelo BullMQ para gerenciar os jobs
       - BULLMQ_QUEUE_NAME=webhookQueue
